@@ -1,4 +1,4 @@
-.text-container {
+/* .text-container {
     font-family: Arial, sans-serif;
     margin: 20px auto;
     padding: 20px;
@@ -32,4 +32,56 @@
 
 .text-line.selected {
   background-color: rgba(59, 130, 246, 0.1); /* Light blue background for selected lines */
+} */
+/* Updated src/styles/textManipulation.css */
+
+.text-container {
+  font-family: Arial, sans-serif;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #ddd;
+  max-width: 600px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: line-height 0.2s ease-in-out;
+  position: relative;
+  user-select: none; /* Prevent text selection while interacting */
+}
+
+.text-container p {
+  margin: 0;
+  padding: 5px 0;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.text-container p:hover {
+  background-color: #f0f0f0;
+}
+
+.text-line {
+  position: static; /* Default position for unselected lines */
+}
+
+.text-line.selected {
+  background-color: rgba(59, 130, 246, 0.1); /* Light blue background for selected lines */
+  z-index: 10;
+  transform: scale(1.05); /* Slight zoom effect for selected lines */
+  position: absolute; /* Allow overlapping */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Add shadow for visual clarity */
+  border-radius: 5px; /* Rounded edges for better appearance */
+}
+
+.text-container.selected-line-overlap {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-line:hover {
+  transform: scale(1.02); /* Subtle zoom on hover */
+}
+
+.text-container::after {
+  content: ""; /* Clearfix for potential floating elements */
+  display: block;
+  clear: both;
 }

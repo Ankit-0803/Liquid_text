@@ -1,29 +1,13 @@
-// import React from "react";
-// import DocumentViewer from "./components/DocumentViewer";
-
-
-// function App() {
-//   return (
-//     <div className="App">
-//       <DocumentViewer />
-//     </div>
-//   );
-// }
-
-// export default App;
-import './index.css'; // Ensure this line exists
-
 import React, { useState, useRef, useEffect } from 'react';
 
 const LiquidText = () => {
+  // Existing state
   const [currentPage, setCurrentPage] = useState(0);
   const [lineSpacing, setLineSpacing] = useState(1.5);
   const [initialTouchDistance, setInitialTouchDistance] = useState(null);
   const [selectedLines, setSelectedLines] = useState(new Set());
-  const [draggedLines, setDraggedLines] = useState(null);
+  const [draggedLine, setDraggedLine] = useState(null);
   const [linePositions, setLinePositions] = useState({});
-  const [groupSelectionStart, setGroupSelectionStart] = useState(null);
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
   
   // Search-related state
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,31 +19,20 @@ const LiquidText = () => {
     {
       id: 0,
       content: `Page 1
-Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
-when an unknown printer took a galley of type and scrambled it to make a type
-specimen book. It has survived not only five centuries, but also the leap into
-electronic typesetting, remaining essentially unchanged.`
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.`
     },
     {
       id: 1,
       content: `Page 2
-There are many variations of passages of Lorem Ipsum available, but the majority
-Have suffered alteration in some form, by injected humour, or randomised words
-Which don't look even slightly believable. If you are going to use a passage of
-Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in the
-Middle of text. All the Lorem Ipsum generators on the Internet tend to repeat
-Predefined chunks as necessary, making this first true generator on the Internet.`
+Duis aute irure dolor in reprehenderit in voluptate velit.
+Excepteur sint occaecat cupidatat non proident, sunt in culpa.
+Qui officia deserunt mollit anim id est laborum dolor.`
     },
     {
       id: 2,
       content: `Page 3
-Nam libero tempore, cum soluta nobis est eligendi optio.
-Cumque nihil impedit quo minus id quod maxime placeat.
-Facere possimus, omnis voluptas assumenda est dolor.
-Nam libero tempore, cum soluta nobis est eligendi optio.
-Cumque nihil impedit quo minus id quod maxime placeat.
-Facere possimus, omnis voluptas assumenda est dolor.
 Nam libero tempore, cum soluta nobis est eligendi optio.
 Cumque nihil impedit quo minus id quod maxime placeat.
 Facere possimus, omnis voluptas assumenda est dolor.`
@@ -94,26 +67,7 @@ Facere possimus, omnis voluptas assumenda est dolor.`
     }
   }, [searchTerm]);
 
-  // Add keyboard event listeners for shift key
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Shift') setIsShiftPressed(true);
-    };
-
-    const handleKeyUp = (e) => {
-      if (e.key === 'Shift') setIsShiftPressed(false);
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, []);
-
-  // Navigation handlers
+  // Navigate to next search result
   const goToNextSearchResult = () => {
     if (searchResults.length > 0) {
       const nextIndex = (currentSearchIndex + 1) % searchResults.length;
@@ -125,6 +79,7 @@ Facere possimus, omnis voluptas assumenda est dolor.`
     }
   };
 
+  // Navigate to previous search result
   const goToPrevSearchResult = () => {
     if (searchResults.length > 0) {
       const prevIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
@@ -168,71 +123,7 @@ Facere possimus, omnis voluptas assumenda est dolor.`
     return result;
   };
 
-  // Enhanced line selection handler
-  const toggleLineSelection = (index) => {
-    const newSelected = new Set(selectedLines);
-    
-    if (isShiftPressed && groupSelectionStart !== null) {
-      // Group selection
-      const start = Math.min(groupSelectionStart, index);
-      const end = Math.max(groupSelectionStart, index);
-      for (let i = start; i <= end; i++) {
-        newSelected.add(i);
-      }
-      setGroupSelectionStart(null);
-    } else {
-      // Single line selection
-      if (newSelected.has(index)) {
-        newSelected.delete(index);
-      } else {
-        newSelected.add(index);
-        setGroupSelectionStart(index);
-      }
-    }
-    setSelectedLines(newSelected);
-  };
-
-  // Enhanced drag handlers
-  const handleDragStart = (e, index) => {
-    if (selectedLines.has(index)) {
-      const selectedArray = Array.from(selectedLines).sort((a, b) => a - b);
-      setDraggedLines(selectedArray);
-      const dragImg = document.createElement('div');
-      dragImg.style.opacity = '0';
-      document.body.appendChild(dragImg);
-      e.dataTransfer.setDragImage(dragImg, 0, 0);
-      document.body.removeChild(dragImg);
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    if (draggedLines) {
-      const rect = contentRef.current.getBoundingClientRect();
-      const y = e.clientY - rect.top;
-      
-      // Calculate the line height and base position
-      const lineHeight = lineSpacing * 16;
-      const baseY = y - (draggedLines.indexOf(Math.min(...draggedLines)) * lineHeight);
-      
-      // Update positions while maintaining order
-      const newPositions = {};
-      draggedLines.forEach((lineIndex, i) => {
-        newPositions[lineIndex] = baseY + (i * lineHeight);
-      });
-
-      setLinePositions(prev => ({
-        ...prev,
-        ...newPositions
-      }));
-    }
-  };
-
-  const handleDragEnd = () => {
-    setDraggedLines(null);
-  };
-
-  // Gesture handlers
+  // Existing gesture handlers
   const getTouchDistance = (touches) => {
     return Math.hypot(
       touches[0].clientX - touches[1].clientX,
@@ -257,7 +148,11 @@ Facere possimus, omnis voluptas assumenda est dolor.`
     }
   };
 
-  // Page navigation handlers
+  const handleTouchEnd = () => {
+    setInitialTouchDistance(null);
+  };
+
+  // Existing navigation handlers
   const goToNextPage = () => {
     if (currentPage < pages.length - 1) {
       setCurrentPage(prev => prev + 1);
@@ -276,13 +171,48 @@ Facere possimus, omnis voluptas assumenda est dolor.`
   const resetPageState = () => {
     setSelectedLines(new Set());
     setLinePositions({});
-    setDraggedLines(null);
-    setGroupSelectionStart(null);
   };
 
   const resetLayout = () => {
-    resetPageState();
+    setLinePositions({});
+    setSelectedLines(new Set());
     setLineSpacing(1.5);
+  };
+
+  // Existing line manipulation handlers
+  const toggleLineSelection = (index) => {
+    const newSelected = new Set(selectedLines);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedLines(newSelected);
+  };
+
+  const handleDragStart = (e, index) => {
+    setDraggedLine(index);
+    const dragImg = document.createElement('div');
+    dragImg.style.opacity = '0';
+    document.body.appendChild(dragImg);
+    e.dataTransfer.setDragImage(dragImg, 0, 0);
+    document.body.removeChild(dragImg);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    if (draggedLine !== null) {
+      const rect = contentRef.current.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      setLinePositions(prev => ({
+        ...prev,
+        [draggedLine]: y
+      }));
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedLine(null);
   };
 
   return (
@@ -346,8 +276,8 @@ Facere possimus, omnis voluptas assumenda est dolor.`
         className="bg-white rounded-lg shadow-lg p-6 relative min-h-[400px]"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
-        onTouchEnd={() => setInitialTouchDistance(null)}
-        onTouchCancel={() => setInitialTouchDistance(null)}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
         onDragOver={handleDragOver}
       >
         {pages[currentPage].content.split('\n').map((line, index) => (
@@ -355,11 +285,11 @@ Facere possimus, omnis voluptas assumenda est dolor.`
             key={index}
             className={`transition-all duration-200 ease-in-out absolute w-full 
               ${selectedLines.has(index) ? 'bg-blue-100 cursor-move' : 'cursor-pointer'}
-              ${draggedLines?.includes(index) ? 'opacity-50' : 'opacity-100'}`}
+              ${draggedLine === index ? 'opacity-50' : 'opacity-100'}`}
             style={{ 
               lineHeight: `${lineSpacing}`,
               top: linePositions[index] || `${index * (lineSpacing * 1.5)}rem`,
-              zIndex: draggedLines?.includes(index) ? 1000 : selectedLines.has(index) ? 100 : 1
+              zIndex: draggedLine === index ? 1000 : selectedLines.has(index) ? 100 : 1
             }}
             onClick={() => toggleLineSelection(index)}
             draggable={selectedLines.has(index)}
@@ -370,19 +300,11 @@ Facere possimus, omnis voluptas assumenda est dolor.`
           </p>
         ))}
       </div>
-
-      {/* Info message */}
-      <div className="mt-2 text-sm text-gray-600 text-center">
-        Hold Shift to select multiple consecutive lines
-      </div>
       
       {/* Controls */}
       <div className="mt-4 flex justify-between items-center bg-gray-100 p-4 rounded-lg">
         <div className="text-sm text-gray-600">
           Line spacing: {lineSpacing.toFixed(2)}
-        </div>
-        <div className="text-sm text-gray-600">
-          Selected lines: {selectedLines.size}
         </div>
         <button 
           onClick={resetLayout}
